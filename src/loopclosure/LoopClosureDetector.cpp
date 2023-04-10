@@ -831,7 +831,17 @@ bool LoopClosureDetector::geometricVerificationNister(
     ransac.threshold_ = lcd_params_.ransac_threshold_mono_;
 
     // Compute transformation via RANSAC.
+    
+    printf("Hello Hello 1 \n");
+    printf("Hello Hello 1 \n");
+    printf("Hello Hello 1 \n");
+    
     bool ransac_success = ransac.computeModel();
+
+    printf("Hello Hello 2 \n");
+    printf("Hello Hello 2 \n");
+    printf("Hello Hello 2 \n");
+    
     VLOG(3) << "ransac 5pt size of input: " << query_versors.size()
             << "\nransac 5pt inliers: " << ransac.inliers_.size()
             << "\nransac 5pt iterations: " << ransac.iterations_;
