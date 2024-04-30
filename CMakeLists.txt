@@ -16,6 +16,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
+
 message(STATUS "==============================================================")
 message(STATUS "====================  Dependencies ===========================")
 
@@ -169,7 +171,7 @@ endif(Pangolin_FOUND)
 
 target_compile_options(${PROJECT_NAME}
   PRIVATE -Wall -pipe
-  PRIVATE -march=native
+  # PRIVATE -march=native
 )
 
 # We would just need to say cxx_std_11 if we were using cmake 3.8

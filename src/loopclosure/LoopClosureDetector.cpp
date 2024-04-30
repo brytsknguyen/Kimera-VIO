@@ -19,9 +19,9 @@
 #include <KimeraRPGO/RobustSolver.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-
 #include <gtsam/inference/Symbol.h>
 #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
+
 #include <opengv/point_cloud/PointCloudAdapter.hpp>
 #include <opengv/relative_pose/CentralRelativeAdapter.hpp>
 #include <opengv/sac/Ransac.hpp>
@@ -88,7 +88,7 @@ LoopClosureDetector::LoopClosureDetector(
   B_Pose_camLrect_ = stereo_camera_->getBodyPoseLeftCamRect();
 
   // Sparse stereo reconstruction members
-  stereo_matcher_ = 
+  stereo_matcher_ =
       VIO::make_unique<StereoMatcher>(stereo_camera_, stereo_matching_params);
 
   // Initialize the ORB feature detector object:
@@ -166,7 +166,9 @@ LcdOutput::UniquePtr LoopClosureDetector::spinOnce(const LcdInput& input) {
       addOdometryFactorAndOptimize(odom_factor);
       break;
     }
-    default: { LOG(FATAL) << "Unrecognized LCD state."; }
+    default: {
+      LOG(FATAL) << "Unrecognized LCD state.";
+    }
   }
 
   // Process the StereoFrame and check for a loop closure with previous ones.
@@ -205,7 +207,8 @@ LcdOutput::UniquePtr LoopClosureDetector::spinOnce(const LcdInput& input) {
     CHECK_EQ(timestamp_map_.size(), db_frames_.size());
     CHECK_EQ(timestamp_map_.size(), W_Pose_Blkf_estimates_.size());
   } else {
-    LOG(ERROR) << "LoopClosureDetector: Not using StereoFrontend! Change frontend.";
+    LOG(ERROR)
+        << "LoopClosureDetector: Not using StereoFrontend! Change frontend.";
   }
 
   // Construct output payload.
@@ -528,7 +531,8 @@ gtsam::Pose3 LoopClosureDetector::refinePoses(
   values.insert(key_query, camMatch_T_camQuery_stereo);
 
   gtsam::SharedNoiseModel noise = gtsam::noiseModel::Unit::Create(6);
-  nfg.add(gtsam::PriorFactor<gtsam::Pose3>(key_match, gtsam::Pose3::identity(), noise));
+  nfg.add(gtsam::PriorFactor<gtsam::Pose3>(
+      key_match, gtsam::Pose3::identity(), noise));
 
   gtsam::SharedNoiseModel noise_stereo = gtsam::noiseModel::Unit::Create(3);
 
@@ -546,10 +550,12 @@ gtsam::Pose3 LoopClosureDetector::refinePoses(
   for (size_t i = 0; i < inlier_id_in_query_frame.size(); i++) {
     KeypointCV undistorted_rectified_left_query_keypoint =
         (db_frames_[query_id]
-             .left_keypoints_rectified_.at(inlier_id_in_query_frame[i]).second);
+             .left_keypoints_rectified_.at(inlier_id_in_query_frame[i])
+             .second);
     KeypointCV undistorted_rectified_right_query_keypoint =
         (db_frames_[query_id]
-             .right_keypoints_rectified_.at(inlier_id_in_query_frame[i]).second);
+             .right_keypoints_rectified_.at(inlier_id_in_query_frame[i])
+             .second);
 
     gtsam::StereoPoint2 sp_query_i(undistorted_rectified_left_query_keypoint.x,
                                    undistorted_rectified_right_query_keypoint.x,
@@ -557,20 +563,24 @@ gtsam::Pose3 LoopClosureDetector::refinePoses(
 
     SmartStereoFactor stereo_factor_i(noise_stereo, smart_factors_params);
 
-    stereo_factor_i.add(sp_query_i, key_query, stereo_camera_->getStereoCalib());
+    stereo_factor_i.add(
+        sp_query_i, key_query, stereo_camera_->getStereoCalib());
 
     KeypointCV undistorted_rectified_left_match_keypoint =
         (db_frames_[match_id]
-             .left_keypoints_rectified_.at(inlier_id_in_match_frame[i]).second);
+             .left_keypoints_rectified_.at(inlier_id_in_match_frame[i])
+             .second);
     KeypointCV undistorted_rectified_right_match_keypoint =
         (db_frames_[match_id]
-             .right_keypoints_rectified_.at(inlier_id_in_match_frame[i]).second);
+             .right_keypoints_rectified_.at(inlier_id_in_match_frame[i])
+             .second);
 
     gtsam::StereoPoint2 sp_match_i(undistorted_rectified_left_match_keypoint.x,
                                    undistorted_rectified_right_match_keypoint.x,
                                    undistorted_rectified_left_match_keypoint.y);
 
-    stereo_factor_i.add(sp_match_i, key_match, stereo_camera_->getStereoCalib());
+    stereo_factor_i.add(
+        sp_match_i, key_match, stereo_camera_->getStereoCalib());
 
     nfg.add(stereo_factor_i);
   }
@@ -684,7 +694,8 @@ void LoopClosureDetector::rewriteStereoFrameFeatures(
   for (const cv::KeyPoint& keypoint : keypoints) {
     left_frame_mutable->keypoints_.push_back(keypoint.pt);
     left_frame_mutable->versors_.push_back(
-        UndistorterRectifier::UndistortKeypointAndGetVersor(keypoint.pt, left_frame_mutable->cam_param_));
+        UndistorterRectifier::UndistortKeypointAndGetVersor(
+            keypoint.pt, left_frame_mutable->cam_param_));
     left_frame_mutable->scores_.push_back(1.0);
   }
 
@@ -831,17 +842,17 @@ bool LoopClosureDetector::geometricVerificationNister(
     ransac.threshold_ = lcd_params_.ransac_threshold_mono_;
 
     // Compute transformation via RANSAC.
-    
-    printf("Hello Hello 1 \n");
-    printf("Hello Hello 1 \n");
-    printf("Hello Hello 1 \n");
-    
+
+    printf("Hello Hello 1 %d\n", static_cast<int>(match_versors.size()));
+    printf("Hello Hello 1 %d\n", ransac.max_iterations_);
+    printf("Hello Hello 1 %f\n", ransac.threshold_);
+
     bool ransac_success = ransac.computeModel();
 
     printf("Hello Hello 2 \n");
     printf("Hello Hello 2 \n");
     printf("Hello Hello 2 \n");
-    
+
     VLOG(3) << "ransac 5pt size of input: " << query_versors.size()
             << "\nransac 5pt inliers: " << ransac.inliers_.size()
             << "\nransac 5pt iterations: " << ransac.iterations_;
